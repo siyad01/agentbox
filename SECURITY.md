@@ -1,4 +1,3 @@
-cat > SECURITY.md << 'EOF'
 # Security Policy
 
 AgentBox is a security tool. We take vulnerabilities seriously and respond quickly.
@@ -81,4 +80,3 @@ The audit log uses SHA-256 hash chaining. Every entry includes the hash of the p
 ## Acknowledgements
 
 We thank the security researchers who have responsibly disclosed vulnerabilities. Contributors will be credited in release notes unless they prefer anonymity.
-EOF
