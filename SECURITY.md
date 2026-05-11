@@ -19,7 +19,7 @@ Report vulnerabilities privately:
 2. Click "Report a vulnerability"
 3. Fill in the details
 
-Or email: `security@[your-domain]` with subject: `[AgentBox] Security Vulnerability`
+Or email: `msiyad254@gmail.com` with subject: `[AgentBox] Security Vulnerability`
 
 ### What to include
 
