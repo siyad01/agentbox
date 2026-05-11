@@ -1,0 +1,6 @@
+name: ""
+version: "1.0.0"
+runtime: kubernetes
+
+limits:
+  max_duration: "not-a-duration"

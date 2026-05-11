@@ -1,0 +1,31 @@
+name: "test-agent"
+version: "1.0.0"
+description: "Simple test agent to verify sandbox isolation"
+runtime: docker
+
+permissions:
+  filesystem:
+    read:
+      - "/tmp/agentbox-test-inbox"
+    write:
+      - "/tmp/agentbox-test-output"
+    deny:
+      - "/etc/passwd"
+      - "/root"
+
+  network:
+    deny:
+      - "*"
+
+  tools:
+    allow:
+      - "read_file"
+      - "write_file"
+
+limits:
+  max_duration: "2m"
+  max_memory_mb: 128
+
+audit:
+  log_level: full
+  log_path: "logs/test-agent-audit.log"

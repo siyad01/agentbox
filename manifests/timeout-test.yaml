@@ -1,0 +1,22 @@
+name: "timeout-test"
+version: "1.0.0"
+runtime: docker
+
+permissions:
+  filesystem:
+    read: ["/tmp"]
+    write: ["/tmp"]
+    deny: []
+  network:
+    deny: ["*"]
+  tools:
+    allow: ["*"]
+
+limits:
+  max_duration: "5s"
+  max_memory_mb: 128
+  max_requests: 100
+
+audit:
+  log_level: full
+  log_path: "logs/timeout-test-audit.log"

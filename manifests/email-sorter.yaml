@@ -1,0 +1,53 @@
+name: "email-sorter"
+version: "1.0.0"
+description: "Reads emails from inbox folder and sorts them by category"
+runtime: docker
+
+permissions:
+  filesystem:
+    read:
+      - "~/Documents/inbox"
+      - "~/Documents/email-rules.json"
+    write:
+      - "~/Documents/sorted"
+    deny:
+      - "~/.ssh"
+      - "~/.aws"
+      - "~/.config"
+      - "/etc"
+
+  network:
+    allow:
+      - "api.anthropic.com"
+      - "gmail.googleapis.com"
+    deny:
+      - "*"
+
+  tools:
+    allow:
+      - "read_file"
+      - "write_file"
+      - "list_directory"
+    deny:
+      - "execute_shell"
+      - "install_package"
+      - "*_delete"
+
+  credentials:
+    - GMAIL_TOKEN
+    - ANTHROPIC_API_KEY
+
+limits:
+  max_tokens:    50000
+  max_duration:  "30m"
+  max_files:     100
+  max_requests:  500
+  max_memory_mb: 256
+
+audit:
+  log_level: full
+  alert_on:
+    - filesystem_deny
+    - network_deny
+    - token_budget_80pct
+  log_path: "logs/email-sorter-audit.log"

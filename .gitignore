@@ -1,0 +1,9 @@
+agentbox
+agentbox-*
+*.log
+logs/
+*.tmp
+.agentbox/
+sample-audit.log
+/tmp/agentbox-*
+EOF

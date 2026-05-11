@@ -1,0 +1,74 @@
+name: Build AgentBox
+
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        include:
+          - os: ubuntu-latest
+            name: Linux
+            binary: agentbox-linux
+          - os: macos-latest
+            name: macOS
+            binary: agentbox-macos
+          - os: windows-latest
+            name: Windows
+            binary: agentbox-windows.exe
+
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.26'
+
+      - name: Build
+        run: go build -o ${{ matrix.binary }} ./cmd/agentbox/
+
+      - name: Upload
+        uses: actions/upload-artifact@v4
+        with:
+          name: AgentBox-${{ matrix.name }}
+          path: ${{ matrix.binary }}
+
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/')
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
+      - uses: softprops/action-gh-release@v2
+        with:
+          name: "AgentBox ${{ github.ref_name }}"
+          body: |
+            ## AgentBox ${{ github.ref_name }}
+
+            Open-source sandboxed runtime for AI agents.
+
+            | Platform | File |
+            |----------|------|
+            | Linux    | agentbox-linux |
+            | macOS    | agentbox-macos |
+            | Windows  | agentbox-windows.exe |
+
+            ### Install
+```bash
+            # Linux/macOS
+            chmod +x agentbox-linux
+            ./agentbox-linux version
+
+            # Or via go install
+            go install github.com/siyad01/agentbox/cmd/agentbox@latest
+```
+          files: |
+            AgentBox-Linux/agentbox-linux
+            AgentBox-macOS/agentbox-macos
+            AgentBox-Windows/agentbox-windows.exe
+EOF

@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>AgentBox Dashboard</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&amp;family=JetBrains+Mono:wght@400&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          "colors": {
+            "tertiary": "#ffb3b0",
+            "surface-container": "#1f1f26",
+            "secondary-fixed": "#80f9c8",
+            "on-tertiary-fixed-variant": "#881d24",
+            "primary-fixed": "#e0e0ff",
+            "surface-container-high": "#292930",
+            "outline": "#908f9e",
+            "on-error": "#690005",
+            "on-tertiary": "#670211",
+            "on-surface-variant": "#c6c5d5",
+            "tertiary-container": "#f06b6b",
+            "surface-variant": "#34343b",
+            "outline-variant": "#454653",
+            "background": "#121319",
+            "surface-container-low": "#1b1b22",
+            "secondary-container": "#18a479",
+            "on-surface": "#e4e1eb",
+            "on-tertiary-container": "#63000f",
+            "surface-container-highest": "#34343b",
+            "surface-bright": "#393840",
+            "on-secondary-container": "#003121",
+            "tertiary-fixed-dim": "#ffb3b0",
+            "on-error-container": "#ffdad6",
+            "tertiary-fixed": "#ffdad8",
+            "on-tertiary-fixed": "#410006",
+            "on-secondary-fixed-variant": "#00513a",
+            "on-secondary-fixed": "#002115",
+            "surface-tint": "#bdc2ff",
+            "surface-container-lowest": "#0d0e14",
+            "secondary-fixed-dim": "#62dcad",
+            "surface-dim": "#121319",
+            "inverse-on-surface": "#303037",
+            "error": "#ffb4ab",
+            "primary-fixed-dim": "#bdc2ff",
+            "on-primary-fixed": "#000767",
+            "secondary": "#62dcad",
+            "error-container": "#93000a",
+            "inverse-primary": "#4953bc",
+            "on-primary-container": "#101b8a",
+            "primary": "#bdc2ff",
+            "on-background": "#e4e1eb",
+            "on-primary-fixed-variant": "#2f3aa3",
+            "primary-container": "#818cf8",
+            "on-primary": "#131e8c",
+            "surface": "#121319",
+            "inverse-surface": "#e4e1eb",
+            "on-secondary": "#003827"
+          },
+          "borderRadius": {
+            "DEFAULT": "0.125rem",
+            "lg": "0.25rem",
+            "xl": "0.5rem",
+            "full": "0.75rem"
+          },
+          "spacing": {
+            "stack-lg": "32px",
+            "stack-sm": "8px",
+            "unit": "4px",
+            "gutter": "16px",
+            "container-padding": "24px",
+            "stack-md": "16px"
+          },
+          "fontFamily": {
+            "body": ["Inter", "sans-serif"],
+            "mono": ["JetBrains Mono", "monospace"]
+          }
+        },
+      },
+    }
+  </script>
+<style>
+    body { font-family: 'Inter', sans-serif; }
+    .status-dot { width: 10px; height: 10px; border-radius: 50%; transition: all 0.3s ease; }
+    
+    /* Preserve dynamic status classes */
+    .status-pill { font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 9999px; text-transform: uppercase; letter-spacing: 0.05em; }
+    .status-pill.running { background-color: rgba(98, 220, 173, 0.15); color: #62dcad; }
+    .status-pill.stopped { background-color: rgba(144, 143, 158, 0.15); color: #908f9e; }
+    .status-pill.killed, .status-pill.failed { background-color: rgba(255, 180, 171, 0.15); color: #ffb4ab; }
+    .status-pill.pending { background-color: rgba(255, 179, 176, 0.15); color: #ffb3b0; }
+
+    /* Preserve decision classes */
+    .allow { color: #62dcad; font-weight: 700; }
+    .deny { color: #ffb4ab; font-weight: 700; }
+
+    .log-table th { @apply text-on-surface-variant font-bold text-[11px] uppercase tracking-wider py-3 px-4 border-b border-outline-variant text-left; }
+    .log-table td { @apply py-3 px-4 border-b border-surface-container text-on-surface text-sm; }
+    .mono-cell { font-family: 'JetBrains Mono', monospace; font-size: 12px; }
+    
+    .panel-header { @apply flex items-center justify-between mb-4 border-b border-outline-variant pb-3; }
+    .panel-title { @apply text-xs font-bold text-on-surface-variant uppercase tracking-[0.08em] flex items-center gap-2; }
+  </style>
+</head>
+<body class="bg-background text-on-background min-h-screen">
+<header class="bg-surface-container border-b border-outline-variant px-container-padding py-4 flex items-center gap-4">
+<div class="flex items-center gap-2">
+<div class="text-xl font-bold tracking-tight">
+<span class="text-primary">Agent</span><span class="text-on-surface">Box</span>
+</div>
+<span class="bg-surface-container-high text-primary text-[10px] font-bold px-2 py-0.5 rounded-full border border-outline-variant">v1.0.0</span>
+</div>
+<div class="h-4 w-[1px] bg-outline-variant hidden sm:block mx-2"></div>
+<span class="text-on-surface-variant text-[11px] font-medium hidden sm:block">Real-time status monitoring</span>
+<div class="flex items-center gap-3 ml-auto">
+<span class="text-[10px] text-outline italic">Refreshes every 5s</span>
+<div class="status-dot bg-outline shadow-none" id="status-dot"></div>
+</div>
+</header>
+<main class="max-w-[1400px] mx-auto px-container-padding py-stack-md space-y-gutter">
+<!-- Error Banner -->
+<div class="bg-error-container/20 border border-error/30 text-error rounded-lg p-4 text-sm flex items-center gap-3" id="error-banner" style="display:none">
+<span class="material-symbols-outlined text-lg">error</span>
+<span class="message-text"></span>
+</div>
+<!-- Stats Grid -->
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-gutter">
+<div class="bg-surface-container border border-outline-variant rounded-xl p-5 hover:bg-surface-container-high transition-colors">
+<div class="text-on-surface-variant text-[11px] font-bold uppercase tracking-widest mb-1">Running Agents</div>
+<div class="text-3xl font-bold text-secondary" id="stat-running">—</div>
+</div>
+<div class="bg-surface-container border border-outline-variant rounded-xl p-5 hover:bg-surface-container-high transition-colors">
+<div class="text-on-surface-variant text-[11px] font-bold uppercase tracking-widest mb-1">Total Agents</div>
+<div class="text-3xl font-bold text-primary-container" id="stat-total">—</div>
+</div>
+<div class="bg-surface-container border border-outline-variant rounded-xl p-5 hover:bg-surface-container-high transition-colors">
+<div class="text-on-surface-variant text-[11px] font-bold uppercase tracking-widest mb-1">Audit Events</div>
+<div class="text-3xl font-bold text-primary" id="stat-events">—</div>
+</div>
+<div class="bg-surface-container border border-outline-variant rounded-xl p-5 hover:bg-surface-container-high transition-colors">
+<div class="text-on-surface-variant text-[11px] font-bold uppercase tracking-widest mb-1">Blocked Actions</div>
+<div class="text-3xl font-bold text-error" id="stat-blocked">—</div>
+</div>
+</div>
+<!-- Main Grid -->
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-gutter">
+<!-- Agents Column -->
+<div class="lg:col-span-5 bg-surface-container border border-outline-variant rounded-xl p-5">
+<div class="panel-header">
+<h2 class="panel-title">
+<span class="material-symbols-outlined text-sm">smart_toy</span>
+          Running Agents
+        </h2>
+<button class="text-[11px] font-bold text-primary hover:text-primary-container transition-colors flex items-center gap-1" onclick="fetchData()">
+<span class="material-symbols-outlined text-sm">refresh</span>
+          REFRESH
+        </button>
+</div>
+<div class="space-y-3" id="agents-list">
+<div class="flex flex-col items-center justify-center py-12 text-outline">
+<span class="material-symbols-outlined text-4xl mb-2 opacity-20">sensors_off</span>
+<p class="text-sm">No agents running</p>
+</div>
+</div>
+</div>
+<!-- Security Column -->
+<div class="lg:col-span-7 bg-surface-container border border-outline-variant rounded-xl p-5">
+<div class="panel-header">
+<h2 class="panel-title">
+<span class="material-symbols-outlined text-sm">shield</span>
+          Security Events (Last 10 Denials)
+        </h2>
+</div>
+<div class="overflow-x-auto" id="security-list">
+<div class="flex flex-col items-center justify-center py-12 text-outline">
+<span class="material-symbols-outlined text-4xl mb-2 opacity-20">verified_user</span>
+<p class="text-sm">No blocked actions</p>
+</div>
+</div>
+</div>
+</div>
+<!-- Audit Log -->
+<div class="bg-surface-container border border-outline-variant rounded-xl p-5">
+<div class="panel-header">
+<div class="flex items-center gap-3">
+<h2 class="panel-title">
+<span class="material-symbols-outlined text-sm">list_alt</span>
+          Audit Log
+        </h2>
+<span class="text-[10px] text-outline-variant font-medium tracking-tight bg-surface-container-high px-2 py-0.5 rounded">LAST 50 EVENTS</span>
+</div>
+<button class="text-[11px] font-bold text-primary hover:text-primary-container transition-colors flex items-center gap-1" onclick="fetchData()">
+<span class="material-symbols-outlined text-sm">refresh</span>
+        REFRESH
+      </button>
+</div>
+<div class="overflow-x-auto" id="audit-log">
+<div class="flex flex-col items-center justify-center py-12 text-outline">
+<span class="material-symbols-outlined text-4xl mb-2 opacity-20">history</span>
+<p class="text-sm">No audit entries yet. Run an agent to see activity.</p>
+</div>
+</div>
+</div>
+</main>
+<script>
+const API = 'http://localhost:8081';
+async function fetchData() {
+  try {
+    // Fetch agents
+    const agentsRes = await fetch(`${API}/api/agents`);
+    if (!agentsRes.ok) throw new Error(`API error: ${agentsRes.status}`);
+    const agentsData = await agentsRes.json();
+    // Fetch audit log
+    const auditRes = await fetch(`${API}/api/audit?limit=50`);
+    const auditData = auditRes.ok ? await auditRes.json() : { entries: [] };
+    // Fetch denials
+    const denyRes = await fetch(`${API}/api/audit?deny=true&limit=10`);
+    const denyData = denyRes.ok ? await denyRes.json() : { entries: [] };
+    renderDashboard(agentsData, auditData, denyData);
+    setConnected(true);
+  } catch(e) {
+    setConnected(false);
+    showError(`Cannot reach AgentBox API at ${API}. Make sure agentbox serve is running.`);
+  }
+}
+function renderDashboard(agentsData, auditData, denyData) {
+  hideError();
+  const agents  = agentsData.agents  || [];
+  const entries = auditData.entries  || [];
+  const denials = denyData.entries   || [];
+  // Stats
+  const running = agents.filter(a => a.status === 'running').length;
+  document.getElementById('stat-running').textContent = running;
+  document.getElementById('stat-total').textContent   = agents.length;
+  document.getElementById('stat-events').textContent  = entries.length;
+  document.getElementById('stat-blocked').textContent = denials.length;
+  // Agents list
+  const agentsList = document.getElementById('agents-list');
+  if (agents.length === 0) {
+    agentsList.innerHTML = '<div class="flex flex-col items-center justify-center py-12 text-outline"><span class="material-symbols-outlined text-4xl mb-2 opacity-20">sensors_off</span><p class="text-sm">No agents tracked yet.</p></div>';
+  } else {
+    agentsList.innerHTML = agents.map(a => `
+      <div class="bg-surface-container-low border border-outline-variant p-4 rounded-lg flex items-center justify-between group transition-all hover:border-primary/50">
+        <div class="flex items-center gap-4">
+          <div class="w-10 h-10 rounded-full bg-surface-container-high flex items-center justify-center text-primary">
+             <span class="material-symbols-outlined">developer_board</span>
+          </div>
+          <div>
+            <div class="text-sm font-bold text-on-surface mb-0.5">${a.name}</div>
+            <div class="text-[11px] text-on-surface-variant flex items-center gap-2">
+              <span class="bg-outline-variant/30 px-1.5 py-0.5 rounded text-[10px] font-mono uppercase">${a.runtime}</span>
+              <span>•</span>
+              <span>Uptime: ${a.uptime}</span>
+              <span>•</span>
+              <span class="font-mono opacity-60">ID: ${a.id.substring(0,8)}</span>
+            </div>
+          </div>
+        </div>
+        <div class="flex items-center gap-3">
+          <span class="status-pill ${a.status}">${a.status}</span>
+          ${a.status === 'running' ? `
+            <button class="w-8 h-8 flex items-center justify-center rounded-lg bg-error/10 text-error border border-error/20 hover:bg-error hover:text-on-error transition-all" onclick="killAgent('${a.id}')" title="Kill Agent">
+              <span class="material-symbols-outlined text-lg">close</span>
+            </button>
+          ` : ''}
+        </div>
+      </div>
+    `).join('');
+  }
+  // Security events
+  const secList = document.getElementById('security-list');
+  if (denials.length === 0) {
+    secList.innerHTML = '<div class="flex flex-col items-center justify-center py-12 text-outline"><span class="material-symbols-outlined text-4xl mb-2 opacity-20">verified_user</span><p class="text-sm">No blocked actions. All agents behaving well.</p></div>';
+  } else {
+    secList.innerHTML = `<table class="log-table w-full">
+      <thead>
+        <tr><th>Agent</th><th>Event</th><th>Resource</th></tr>
+      </thead>
+      <tbody>
+        ${denials.map(e => `
+          <tr class="hover:bg-surface-container-high/50 transition-colors">
+            <td class="font-bold">${e.agent_name}</td>
+            <td><span class="deny text-[10px] border border-error/30 px-1.5 py-0.5 rounded bg-error/5 uppercase tracking-tighter">DENY</span> <span class="ml-1">${e.event_type.replace('_deny','')}</span></td>
+            <td class="mono-cell text-outline-variant">${e.resource || '—'}</td>
+          </tr>
+        `).join('')}
+      </tbody>
+    </table>`;
+  }
+  // Audit log
+  const logDiv = document.getElementById('audit-log');
+  if (entries.length === 0) {
+    logDiv.innerHTML = '<div class="flex flex-col items-center justify-center py-12 text-outline"><span class="material-symbols-outlined text-4xl mb-2 opacity-20">history</span><p class="text-sm">No audit entries yet.</p></div>';
+  } else {
+    const reversed = [...entries].reverse();
+    logDiv.innerHTML = `<table class="log-table w-full">
+      <thead>
+        <tr><th>Time</th><th>Agent</th><th>Decision</th><th>Event</th><th>Resource</th><th>Reason</th></tr>
+      </thead>
+      <tbody>
+        ${reversed.map(e => `
+          <tr class="hover:bg-surface-container-high/50 transition-colors">
+            <td class="text-outline-variant text-[11px]">${new Date(e.timestamp).toLocaleTimeString()}</td>
+            <td class="font-semibold text-on-surface">${e.agent_name || '—'}</td>
+            <td><span class="${e.allowed ? 'allow bg-secondary/5 border-secondary/20' : 'deny bg-error/5 border-error/20'} text-[10px] border px-1.5 py-0.5 rounded uppercase tracking-tighter">${e.allowed ? 'ALLOW' : 'DENY'}</span></td>
+            <td class="text-on-surface-variant font-medium">${e.event_type}</td>
+            <td class="mono-cell text-outline text-[11px]">${(e.resource || '—').substring(0,30)}</td>
+            <td class="text-[11px] italic text-outline-variant">${(e.reason || '—').substring(0,40)}</td>
+          </tr>
+        `).join('')}
+      </tbody>
+    </table>`;
+  }
+}
+async function killAgent(id) {
+  if (!confirm(`Kill agent ${id.substring(0,8)}?`)) return;
+  try {
+    const res = await fetch(`${API}/api/agents/${id}`, { method: 'DELETE' });
+    const data = await res.json();
+    alert(data.status === 'killed' ? '✅ Agent killed' : `Error: ${data.error}`);
+    fetchData();
+  } catch(e) {
+    alert(`Error: ${e.message}`);
+  }
+}
+function setConnected(ok) {
+  const dot = document.getElementById('status-dot');
+  if (ok) {
+    dot.className = 'status-dot bg-secondary shadow-[0_0_8px_rgba(98,220,173,0.6)]';
+  } else {
+    dot.className = 'status-dot bg-error shadow-[0_0_8px_rgba(255,180,171,0.6)]';
+  }
+}
+function showError(msg) {
+  const b = document.getElementById('error-banner');
+  b.querySelector('.message-text').textContent = msg;
+  b.style.display = 'flex';
+}
+function hideError() {
+  document.getElementById('error-banner').style.display = 'none';
+}
+// Auto-refresh every 5 seconds
+fetchData();
+setInterval(fetchData, 5000);
+</script>
+</body></html>
