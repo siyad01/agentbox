@@ -59,16 +59,15 @@ jobs:
             | Windows  | agentbox-windows.exe |
 
             ### Install
-```bash
+            ```bash
             # Linux/macOS
             chmod +x agentbox-linux
             ./agentbox-linux version
 
             # Or via go install
             go install github.com/siyad01/agentbox/cmd/agentbox@latest
-```
+            ```
           files: |
             AgentBox-Linux/agentbox-linux
             AgentBox-macOS/agentbox-macos
             AgentBox-Windows/agentbox-windows.exe
-EOF

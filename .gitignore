@@ -1,9 +1,16 @@
-agentbox
-agentbox-*
+# binaries
+/agentbox
+/agentbox-*
+*.exe
+
+# logs
 *.log
 logs/
+
+# temp
 *.tmp
 .agentbox/
-sample-audit.log
 /tmp/agentbox-*
-EOF
+
+# demo audit file
+sample-audit.log
